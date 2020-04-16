@@ -1,0 +1,13 @@
+{
+  "configurations": [
+    {
+      "includePath": [
+        "dependencies/cxxopts/include",
+        "dependencies/asio/asio/include",
+        "dependencies/boost_1_72_0/"
+      ],
+      "defines": ["ASIO_STANDALONE"]
+    }
+  ],
+  "version": 4
+}
