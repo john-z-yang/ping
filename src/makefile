@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -pthread -I ../dependencies/boost_1_72_0/ -I ../dependencies/cxxopts/include/
+CXXFLAGS = -std=c++11 -pthread -Wall -I ../dependencies/boost_1_72_0/ -I ../dependencies/cxxopts/include/
 
 ping: main.o pinger.o echo_packet.o
 	$(CXX) $(CXXFLAGS) main.o pinger.o echo_packet.o -o ping

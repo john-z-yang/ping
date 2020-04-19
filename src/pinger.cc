@@ -3,18 +3,17 @@
 Pinger::Pinger(boost::asio::io_service &io_service,
                boost::asio::ip::icmp::endpoint &destination,
                boost::posix_time::millisec &timeout_duration)
-    : socket(io_service, icmp::v4()), destination(destination),
-      timeout_duration(timeout_duration), timer(io_service), sequence(0),
-      packet_interval(1000) {
+    : destination(destination), packet_interval(1000),
+      timeout_duration(timeout_duration), socket(io_service, icmp::v4()),
+      timer(io_service), sequence(0) {
   start_send();
   start_recive();
 }
 
 Pinger::Pinger(boost::asio::io_service &io_service,
                boost::asio::ip::icmp::endpoint &destination)
-    : socket(io_service, icmp::v4()), destination(destination),
-      timeout_duration(5000), timer(io_service), sequence(0),
-      packet_interval(1000) {
+    : destination(destination), packet_interval(1000), timeout_duration(5000),
+      socket(io_service, icmp::v4()), timer(io_service), sequence(0) {
   start_send();
   start_recive();
 }
@@ -88,6 +87,7 @@ std::ostream &operator<<(std::ostream &os,
      << statistics.to_milliseconds(statistics.get_average_latency()) << "/"
      << statistics.to_milliseconds(statistics.get_max_latency()) << "/"
      << statistics.to_milliseconds(statistics.get_mid_latency()) << " ms";
+  return os;
 }
 
 uint16_t Pinger::get_identifier() const {
