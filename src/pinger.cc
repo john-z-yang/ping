@@ -55,21 +55,6 @@ uint64_t Pinger::Statistics::get_max_latency() const {
   return latencies.empty() ? 0 : *std::prev(latencies.end());
 }
 
-uint64_t Pinger::Statistics::get_mid_latency() const {
-  if (latencies.empty()) {
-    return 0;
-  } else if (latencies.size() % 2 == 0) {
-    auto it1 = latencies.begin();
-    auto it2 = latencies.begin();
-    std::advance(it1, latencies.size() / 2 - 1);
-    std::advance(it2, latencies.size() / 2);
-    return *it1 + *it2 / 2;
-  }
-  auto it = latencies.begin();
-  std::advance(it, latencies.size() / 2);
-  return *it;
-}
-
 double Pinger::Statistics::to_milliseconds(uint64_t microseconds) {
   const double microseconds_per_millisecond = 1000;
   return static_cast<double>(microseconds) / microseconds_per_millisecond;
@@ -82,11 +67,10 @@ std::ostream &operator<<(std::ostream &os,
 
   os << statistics.get_total_packets_sent() << " packets transmitted, "
      << statistics.get_packet_loss() << "% loss" << std::endl
-     << "min/avg/max/mdev = "
+     << "min/avg/max/ = "
      << statistics.to_milliseconds(statistics.get_min_latency()) << "/"
      << statistics.to_milliseconds(statistics.get_average_latency()) << "/"
-     << statistics.to_milliseconds(statistics.get_max_latency()) << "/"
-     << statistics.to_milliseconds(statistics.get_mid_latency()) << " ms";
+     << statistics.to_milliseconds(statistics.get_max_latency()) << " ms";
   return os;
 }
 

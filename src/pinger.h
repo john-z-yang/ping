@@ -32,7 +32,6 @@ public:
     uint64_t get_min_latency() const;
     uint64_t get_average_latency() const;
     uint64_t get_max_latency() const;
-    uint64_t get_mid_latency() const;
 
     static double to_milliseconds(uint64_t microseconds);
 
