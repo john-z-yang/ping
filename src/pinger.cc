@@ -25,7 +25,7 @@ void Pinger::Statistics::add_latency(uint16_t latency) {
   latencies.insert(latency);
 }
 
-void Pinger::Statistics::add_timeout() { ++num_timeout; }
+void Pinger::Statistics::increment_timeout() { ++num_timeout; }
 
 uint64_t Pinger::Statistics::get_total_packets_sent() const {
   return latencies.size() + num_timeout;
@@ -39,11 +39,15 @@ double Pinger::Statistics::get_packet_loss() const {
          static_cast<double>(latencies.size() + num_timeout);
 }
 
+uint64_t Pinger::Statistics::get_min_latency() const {
+  return latencies.empty() ? 0 : *latencies.begin();
+}
+
 double Pinger::Statistics::get_average_latency() const {
   if (get_total_packets_sent() == 0) {
     return 0;
   }
-  int64_t total_latencies =
+  const int64_t total_latencies =
       std::accumulate(latencies.begin(), latencies.end(), 0);
   return static_cast<double>(total_latencies) /
          static_cast<double>(latencies.size());
@@ -51,10 +55,6 @@ double Pinger::Statistics::get_average_latency() const {
 
 uint64_t Pinger::Statistics::get_max_latency() const {
   return latencies.empty() ? 0 : *std::prev(latencies.end());
-}
-
-uint64_t Pinger::Statistics::get_min_latency() const {
-  return latencies.empty() ? 0 : *latencies.begin();
 }
 
 double Pinger::Statistics::get_mid_latency() const {
@@ -65,11 +65,11 @@ double Pinger::Statistics::get_mid_latency() const {
     auto it2 = latencies.begin();
     std::advance(it1, latencies.size() / 2 - 1);
     std::advance(it2, latencies.size() / 2);
-    return (*it1 + *it2) / 2;
+    return static_cast<double>(*it1 + *it2) / 2.0;
   }
   auto it = latencies.begin();
   std::advance(it, latencies.size() / 2);
-  return *it;
+  return static_cast<double>(*it);
 }
 
 std::ostream &operator<<(std::ostream &os,
@@ -77,7 +77,7 @@ std::ostream &operator<<(std::ostream &os,
   os << std::fixed << std::showpoint << std::setprecision(1);
   os << statistics.get_total_packets_sent() << " packets transmitted, "
      << statistics.get_packet_loss() << "% loss, "
-     << "min/avg/max/mdev=" << statistics.get_min_latency() << "/"
+     << "min/avg/max/mdev = " << statistics.get_min_latency() << "/"
      << statistics.get_average_latency() << "/" << statistics.get_max_latency()
      << "/" << statistics.get_mid_latency();
 }
@@ -99,6 +99,7 @@ void Pinger::start_send() {
   timer.expires_at(time_sent + timeout_duration);
   timer.async_wait(
       [&](const boost::system::error_code &ec) { handle_timeout(ec); });
+
   response_recived = false;
 }
 
@@ -123,9 +124,9 @@ void Pinger::handle_receive(const boost::system::error_code &ec,
   if (is && response.get_type() == EchoPacket::reply &&
       response.get_identifier() == get_identifier() &&
       response.get_sequence() == sequence) {
-    boost::posix_time::ptime now =
+    const boost::posix_time::ptime now =
         boost::posix_time::microsec_clock::universal_time();
-    uint16_t latency = (now - time_sent).total_milliseconds();
+    const uint16_t latency = (now - time_sent).total_milliseconds();
 
     std::cout << destination << ":"
               << " seq=" << response.get_sequence() << ", time=" << latency
@@ -148,7 +149,7 @@ void Pinger::handle_receive(const boost::system::error_code &ec,
 void Pinger::handle_timeout(const boost::system::error_code &ec) {
   if (!response_recived) {
     std::cout << destination << ": Request timed out" << std::endl;
-    statistics.add_timeout();
+    statistics.increment_timeout();
   }
   start_send();
 }
