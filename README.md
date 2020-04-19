@@ -8,23 +8,23 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Make sure you have g++ and make, and you are on MacOS or Linux.
+Make sure you have g++ and make, and you are on macOS or Linux.
 
 ### Installing
 
-Clone this repository (use the `--recursive` flag as it contains submodules)
+Clone this repository (use the `--recursive` flag as it contains submodules).
 
 ```bash
 git clone https://github.com/dniwrallets/ping.git --recursive
 ```
 
-Navigate to the root and run make, the final executable (`ping`) will be in the `out` direcotry.
+Navigate to the root and run make, the final executable (`ping`) will be in the `out` directory.
 
 ```bash
 make
 ```
 
-Run the program (note: you may need to be root, do `--help` for more options)
+Run the program (note: you may need to be root, do `--help` for more options).
 
 ```bash
 sudo out/ping google.com
