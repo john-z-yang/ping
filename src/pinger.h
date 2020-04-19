@@ -30,15 +30,17 @@ public:
     uint64_t get_total_packets_sent() const;
     double get_packet_loss() const;
     uint64_t get_min_latency() const;
-    double get_average_latency() const;
+    uint64_t get_average_latency() const;
     uint64_t get_max_latency() const;
-    double get_mid_latency() const;
+    uint64_t get_mid_latency() const;
+
+    static double to_milliseconds(uint64_t microseconds);
 
     friend std::ostream &operator<<(std::ostream &os,
                                     const Statistics &statistics);
 
   private:
-    std::multiset<uint16_t> latencies;
+    std::multiset<uint64_t> latencies;
     uint64_t num_timeout;
   };
 

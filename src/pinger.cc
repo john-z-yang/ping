@@ -43,21 +43,20 @@ uint64_t Pinger::Statistics::get_min_latency() const {
   return latencies.empty() ? 0 : *latencies.begin();
 }
 
-double Pinger::Statistics::get_average_latency() const {
+uint64_t Pinger::Statistics::get_average_latency() const {
   if (get_total_packets_sent() == 0) {
     return 0;
   }
   const int64_t total_latencies =
       std::accumulate(latencies.begin(), latencies.end(), 0);
-  return static_cast<double>(total_latencies) /
-         static_cast<double>(latencies.size());
+  return total_latencies / latencies.size();
 }
 
 uint64_t Pinger::Statistics::get_max_latency() const {
   return latencies.empty() ? 0 : *std::prev(latencies.end());
 }
 
-double Pinger::Statistics::get_mid_latency() const {
+uint64_t Pinger::Statistics::get_mid_latency() const {
   if (latencies.empty()) {
     return 0;
   } else if (latencies.size() % 2 == 0) {
@@ -65,21 +64,30 @@ double Pinger::Statistics::get_mid_latency() const {
     auto it2 = latencies.begin();
     std::advance(it1, latencies.size() / 2 - 1);
     std::advance(it2, latencies.size() / 2);
-    return static_cast<double>(*it1 + *it2) / 2.0;
+    return *it1 + *it2 / 2;
   }
   auto it = latencies.begin();
   std::advance(it, latencies.size() / 2);
-  return static_cast<double>(*it);
+  return *it;
+}
+
+double Pinger::Statistics::to_milliseconds(uint64_t microseconds) {
+  const double microseconds_per_millisecond = 1000;
+  return static_cast<double>(microseconds) / microseconds_per_millisecond;
 }
 
 std::ostream &operator<<(std::ostream &os,
                          const Pinger::Statistics &statistics) {
-  os << std::fixed << std::showpoint << std::setprecision(1);
+  const uint8_t precision = 3;
+  os << std::fixed << std::showpoint << std::setprecision(precision);
+
   os << statistics.get_total_packets_sent() << " packets transmitted, "
      << statistics.get_packet_loss() << "% loss, "
-     << "min/avg/max/mdev = " << statistics.get_min_latency() << "/"
-     << statistics.get_average_latency() << "/" << statistics.get_max_latency()
-     << "/" << statistics.get_mid_latency();
+     << "min/avg/max/mdev = "
+     << statistics.to_milliseconds(statistics.get_min_latency()) << "/"
+     << statistics.to_milliseconds(statistics.get_average_latency()) << "/"
+     << statistics.to_milliseconds(statistics.get_max_latency()) << "/"
+     << statistics.to_milliseconds(statistics.get_mid_latency());
 }
 
 uint16_t Pinger::get_identifier() const {
@@ -126,10 +134,11 @@ void Pinger::handle_receive(const boost::system::error_code &ec,
       response.get_sequence() == sequence) {
     const boost::posix_time::ptime now =
         boost::posix_time::microsec_clock::universal_time();
-    const uint16_t latency = (now - time_sent).total_milliseconds();
+    const uint64_t latency = (now - time_sent).total_microseconds();
 
     std::cout << destination << ":"
-              << " seq=" << response.get_sequence() << ", time=" << latency
+              << " seq=" << response.get_sequence()
+              << ", time=" << statistics.to_milliseconds(latency)
               << "ms:" << std::endl
               << statistics << std::endl
               << std::endl;
