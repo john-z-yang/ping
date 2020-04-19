@@ -82,12 +82,12 @@ std::ostream &operator<<(std::ostream &os,
   os << std::fixed << std::showpoint << std::setprecision(precision);
 
   os << statistics.get_total_packets_sent() << " packets transmitted, "
-     << statistics.get_packet_loss() << "% loss, "
+     << statistics.get_packet_loss() << "% loss" << std::endl
      << "min/avg/max/mdev = "
      << statistics.to_milliseconds(statistics.get_min_latency()) << "/"
      << statistics.to_milliseconds(statistics.get_average_latency()) << "/"
      << statistics.to_milliseconds(statistics.get_max_latency()) << "/"
-     << statistics.to_milliseconds(statistics.get_mid_latency());
+     << statistics.to_milliseconds(statistics.get_mid_latency()) << " ms";
 }
 
 uint16_t Pinger::get_identifier() const {
