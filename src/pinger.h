@@ -1,9 +1,12 @@
 #ifndef PINGER_H
 #define PINGER_H
+
 #include <boost/asio.hpp>
 #include <chrono>
+#include <iomanip>
 #include <iostream>
-#include <vector>
+#include <numeric>
+#include <set>
 
 #include "echo_packet.h"
 
@@ -20,10 +23,24 @@ public:
 
   class Statistics {
   public:
-    std::vector<boost::posix_time::ptime> latencies;
-    int64_t num_timeout;
-
     Statistics();
+
+    void add_latency(uint16_t latency);
+    void add_timeout();
+
+    uint64_t get_total_packets_sent() const;
+    double get_packet_loss() const;
+    uint64_t get_min_latency() const;
+    double get_average_latency() const;
+    uint64_t get_max_latency() const;
+    double get_mid_latency() const;
+
+  private:
+    std::multiset<uint16_t> latencies;
+    uint64_t num_timeout;
+
+    friend std::ostream &operator<<(std::ostream &os,
+                                    const Statistics &statistics);
   };
 
 private:
@@ -42,11 +59,14 @@ private:
 
   Statistics statistics;
 
-  uint16_t get_identifier();
+  uint16_t get_identifier() const;
   void start_send();
   void start_recive();
   void handle_receive(const boost::system::error_code &ec,
                       size_t bytes_transferred);
   void handle_timeout(const boost::system::error_code &ec);
 };
+
+std::ostream &operator<<(std::ostream &os,
+                         const Pinger::Statistics &statistics);
 #endif
