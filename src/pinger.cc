@@ -162,20 +162,3 @@ void Pinger::handle_timeout(const boost::system::error_code &ec) {
   }
   start_send();
 }
-
-int main(int argc, char *argv[]) {
-  boost::asio::io_service io_service;
-
-  icmp::resolver::query query(icmp::v4(), argv[1], "");
-  icmp::resolver resolver(io_service);
-
-  boost::asio::ip::icmp::endpoint destination = *resolver.resolve(query);
-  boost::posix_time::millisec timeout_duration =
-      boost::posix_time::millisec(3000);
-
-  Pinger pinger(io_service, destination, timeout_duration);
-
-  io_service.run();
-
-  return 0;
-}
