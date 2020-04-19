@@ -1,0 +1,11 @@
+{
+  "configurations": [
+    {
+      "includePath": [
+        "dependencies/cxxopts/include",
+        "dependencies/boost_1_72_0/"
+      ]
+    }
+  ],
+  "version": 4
+}
