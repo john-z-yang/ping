@@ -136,17 +136,17 @@ void Pinger::handle_receive(const boost::system::error_code &ec,
         boost::posix_time::microsec_clock::universal_time();
     const uint64_t latency = (now - time_sent).total_microseconds();
 
+    response_recived = true;
+    ++sequence;
+
+    statistics.add_latency(latency);
+
     std::cout << destination << ":"
               << " seq=" << response.get_sequence()
               << ", time=" << statistics.to_milliseconds(latency)
               << "ms:" << std::endl
               << statistics << std::endl
               << std::endl;
-
-    response_recived = true;
-    ++sequence;
-
-    statistics.add_latency(latency);
 
     timer.expires_at(now + packet_interval);
     timer.wait();
