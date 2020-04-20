@@ -24,7 +24,9 @@ Navigate to the root and run make, the final executable (`ping`) will be in the 
 make
 ```
 
-Run the program (note: you may need to be root, see `--help` for more options).
+Run the program (note: you may need to be root).
+
+See `--help` for more options
 
 ```bash
 sudo out/ping google.com
