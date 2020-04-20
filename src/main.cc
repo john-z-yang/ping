@@ -5,7 +5,7 @@
 
 void validate_timeout(int milliseconds) {
   const int max_timeout = 10000;
-  const int min_timeout = 50;
+  const int min_timeout = 10;
   if (milliseconds >= min_timeout && milliseconds <= max_timeout) {
     return;
   }
