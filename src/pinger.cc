@@ -141,8 +141,16 @@ void Pinger::handle_receive(const asio::error_code &ec,
 
 void Pinger::handle_timeout(const asio::error_code &ec) {
   if (!response_recived) {
-    std::cout << destination << ": Request timed out" << std::endl;
+    std::cout << destination << ": Request timed out (>"
+              << timeout_duration.count() << " ms)" << std::endl
+              << std::endl;
+
     statistics.increment_timeout();
+    response_recived = true;
+    ++sequence;
+
+    timer.expires_at(asio::chrono::steady_clock::now() + packet_interval);
+    timer.wait();
   }
   start_send();
 }
