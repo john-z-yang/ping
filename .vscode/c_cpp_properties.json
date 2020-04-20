@@ -3,7 +3,8 @@
     {
       "includePath": [
         "dependencies/cxxopts/include",
-        "dependencies/boost_1_72_0/"
+        "dependencies/boost_1_72_0/",
+        "dependencies/asio/asio/include/"
       ]
     }
   ],

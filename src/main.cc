@@ -10,8 +10,8 @@ bool is_valid_timeout(int milliseconds) {
   return milliseconds >= min_timeout && milliseconds <= max_timeout;
 }
 
-boost::asio::ip::icmp::endpoint
-resolve_endpint(boost::asio::io_service &io_service, std::string address) {
+asio::ip::icmp::endpoint resolve_endpint(asio::io_service &io_service,
+                                         std::string address) {
   const icmp::resolver::query query(icmp::v4(), address, "");
   icmp::resolver resolver(io_service);
   return *resolver.resolve(query);
@@ -43,9 +43,8 @@ cxxopts::ParseResult parse_options(cxxopts::Options &options, int &argc,
   return options_result;
 }
 
-boost::asio::ip::icmp::endpoint
-parse_destination(boost::asio::io_service &io_service, int &argc,
-                  char *argv[]) {
+asio::ip::icmp::endpoint parse_destination(asio::io_service &io_service,
+                                           int &argc, char *argv[]) {
   if (argc == 1) {
     std::cerr << "Missing ip address or domain name, see --help for more info"
               << std::endl;
@@ -54,7 +53,7 @@ parse_destination(boost::asio::io_service &io_service, int &argc,
 
   try {
     return resolve_endpint(io_service, argv[1]);
-  } catch (boost::system::system_error se) {
+  } catch (const asio::error_code &ec) {
     std::cerr << "Unable to resolve endpoint: " << argv[1] << std::endl;
     exit(1);
   }
@@ -65,18 +64,17 @@ int main(int argc, char *argv[]) {
                            "Send/recive icmp echo packets to/from an endpoint");
   cxxopts::ParseResult options_result = parse_options(options, argc, argv);
 
-  boost::asio::io_service io_service;
+  asio::io_service io_service;
 
-  boost::asio::ip::icmp::endpoint endpoint =
-      parse_destination(io_service, argc, argv);
+  asio::ip::icmp::endpoint endpoint = parse_destination(io_service, argc, argv);
 
-  boost::posix_time::millisec timeout_duration =
-      boost::posix_time::millisec(options_result["timeout"].as<int>());
+  asio::chrono::milliseconds timeout_duration =
+      asio::chrono::milliseconds(options_result["timeout"].as<int>());
 
   try {
     Pinger pinger(io_service, endpoint, timeout_duration);
     io_service.run();
-  } catch (boost::system::system_error se) {
+  } catch (const asio::system_error &se) {
     std::cerr << "ERROR: " << se.what() << std::endl
               << "You may need to run this program as root" << std::endl;
   }

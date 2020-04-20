@@ -1,8 +1,8 @@
 #include "pinger.h"
 
-Pinger::Pinger(boost::asio::io_service &io_service,
-               boost::asio::ip::icmp::endpoint &destination,
-               boost::posix_time::millisec &timeout_duration)
+Pinger::Pinger(asio::io_service &io_service,
+               const asio::ip::icmp::endpoint &destination,
+               const asio::chrono::milliseconds &timeout_duration)
     : destination(destination), packet_interval(1000),
       timeout_duration(timeout_duration), socket(io_service, icmp::v4()),
       timer(io_service), sequence(0) {
@@ -10,8 +10,8 @@ Pinger::Pinger(boost::asio::io_service &io_service,
   start_recive();
 }
 
-Pinger::Pinger(boost::asio::io_service &io_service,
-               boost::asio::ip::icmp::endpoint &destination)
+Pinger::Pinger(asio::io_service &io_service,
+               const asio::ip::icmp::endpoint &destination)
     : destination(destination), packet_interval(1000), timeout_duration(5000),
       socket(io_service, icmp::v4()), timer(io_service), sequence(0) {
   start_send();
@@ -80,17 +80,16 @@ uint16_t Pinger::get_identifier() const {
 
 void Pinger::start_send() {
   EchoPacket request(get_identifier(), sequence);
-  boost::asio::streambuf request_buffer;
+  asio::streambuf request_buffer;
   std::ostream os(&request_buffer);
   os << request;
 
   socket.send_to(request_buffer.data(), destination);
 
-  time_sent = boost::posix_time::microsec_clock::universal_time();
+  time_sent = asio::steady_timer::clock_type::now();
 
   timer.expires_at(time_sent + timeout_duration);
-  timer.async_wait(
-      [&](const boost::system::error_code &ec) { handle_timeout(ec); });
+  timer.async_wait([&](const asio::error_code &ec) { handle_timeout(ec); });
 
   response_recived = false;
 }
@@ -99,12 +98,12 @@ void Pinger::start_recive() {
   reply_buffer.consume(reply_buffer.size());
   socket.async_receive(
       reply_buffer.prepare(65536),
-      [&](const boost::system::error_code &ec, size_t bytes_transferred) {
+      [&](const asio::error_code &ec, size_t bytes_transferred) {
         handle_receive(ec, bytes_transferred);
       });
 }
 
-void Pinger::handle_receive(const boost::system::error_code &ec,
+void Pinger::handle_receive(const asio::error_code &ec,
                             size_t bytes_transferred) {
   reply_buffer.commit(bytes_transferred);
 
@@ -116,19 +115,20 @@ void Pinger::handle_receive(const boost::system::error_code &ec,
   if (is && response.get_type() == EchoPacket::reply &&
       response.get_identifier() == get_identifier() &&
       response.get_sequence() == sequence) {
-    const boost::posix_time::ptime now =
-        boost::posix_time::microsec_clock::universal_time();
-    const uint64_t latency = (now - time_sent).total_microseconds();
+    const asio::chrono::steady_clock::time_point now =
+        asio::chrono::steady_clock::now();
+    const uint64_t latency =
+        asio::chrono::duration_cast<asio::chrono::microseconds>(now - time_sent)
+            .count();
 
     response_recived = true;
     ++sequence;
 
     statistics.add_latency(latency);
 
-    std::cout << destination << ":"
-              << " seq=" << response.get_sequence()
+    std::cout << destination << ": seq=" << response.get_sequence()
               << ", time=" << statistics.to_milliseconds(latency)
-              << "ms:" << std::endl
+              << " ms:" << std::endl
               << statistics << std::endl
               << std::endl;
 
@@ -139,7 +139,7 @@ void Pinger::handle_receive(const boost::system::error_code &ec,
   start_recive();
 }
 
-void Pinger::handle_timeout(const boost::system::error_code &ec) {
+void Pinger::handle_timeout(const asio::error_code &ec) {
   if (!response_recived) {
     std::cout << destination << ": Request timed out" << std::endl;
     statistics.increment_timeout();
