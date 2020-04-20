@@ -3,11 +3,15 @@
 
 #include "pinger.h"
 
-const int max_timeout = 10000;
-const int min_timeout = 100;
-
-bool is_valid_timeout(int milliseconds) {
-  return milliseconds >= min_timeout && milliseconds <= max_timeout;
+void validate_timeout(int milliseconds) {
+  const int max_timeout = 10000;
+  const int min_timeout = 50;
+  if (milliseconds >= min_timeout && milliseconds <= max_timeout) {
+    return;
+  }
+  std::cerr << "Timeout must be in range of [" << min_timeout << ", "
+            << max_timeout << "] ms" << std::endl;
+  exit(1);
 }
 
 asio::ip::icmp::endpoint resolve_endpint(asio::io_service &io_service,
@@ -25,22 +29,25 @@ cxxopts::ParseResult parse_options(cxxopts::Options &options, int &argc,
       cxxopts::value<int>()->default_value(defualt_timeout));
   options.custom_help("[OPTION...] destination");
 
-  cxxopts::ParseResult options_result = options.parse(argc, argv);
+  try {
+    cxxopts::ParseResult options_result = options.parse(argc, argv);
 
-  if (options_result.count("help")) {
-    std::cout << options.help() << std::endl
-              << "You may need to run this program as root";
-    exit(0);
-  }
+    if (options_result.count("help")) {
+      std::cout << options.help() << std::endl
+                << "You may need to run this program as root";
+      exit(0);
+    }
 
-  if (options_result.count("timeout") &&
-      !is_valid_timeout(options_result["timeout"].as<int>())) {
-    std::cerr << "timeout must be within [" << min_timeout << ", "
-              << max_timeout << "]" << std::endl;
+    if (options_result.count("timeout")) {
+      validate_timeout(options_result["timeout"].as<int>());
+    }
+
+    return options_result;
+
+  } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
     exit(1);
   }
-
-  return options_result;
 }
 
 asio::ip::icmp::endpoint parse_destination(asio::io_service &io_service,
@@ -53,7 +60,7 @@ asio::ip::icmp::endpoint parse_destination(asio::io_service &io_service,
 
   try {
     return resolve_endpint(io_service, argv[1]);
-  } catch (const asio::error_code &ec) {
+  } catch (const std::exception &e) {
     std::cerr << "Unable to resolve endpoint: " << argv[1] << std::endl;
     exit(1);
   }
@@ -75,7 +82,7 @@ int main(int argc, char *argv[]) {
     Pinger pinger(io_service, endpoint, timeout_duration);
     io_service.run();
   } catch (const asio::system_error &se) {
-    std::cerr << "ERROR: " << se.what() << std::endl
+    std::cerr << se.what() << std::endl
               << "You may need to run this program as root" << std::endl;
   }
 
