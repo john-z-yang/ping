@@ -1,6 +1,6 @@
 # ping
 
-Ping CLI application written in C++ using boost/asio and cxxopts.
+Ping CLI application written in C++ using asio and cxxopts.
 
 ## Getting Started
 
@@ -24,7 +24,9 @@ Navigate to the root and run make, the final executable (`ping`) will be in the 
 make
 ```
 
-Run the program (note: you may need to be root, do `--help` for more options).
+Run the program (note: you may need to be root).
+
+See `--help` for more options
 
 ```bash
 sudo out/ping google.com
@@ -41,7 +43,7 @@ min/avg/max/ = 14.372/16.322/18.273 ms
 
 ## Built With
 
-- [boost/asio](https://think-async.com/Asio/) - For network programming
+- [asio](https://think-async.com/Asio/) - For network programming
 - [cxxopts](https://github.com/jarro2783/cxxopts) - For command line option parsing
 - [make](https://www.gnu.org/software/make/) - For executable generation
 
@@ -51,6 +53,6 @@ min/avg/max/ = 14.372/16.322/18.273 ms
 
 ## Acknowledgments
 
-- **Chris Kohlhoff** - boost/asio - [chriskohlhoff](https://github.com/chriskohlhoff)
+- **Chris Kohlhoff** - asio - [chriskohlhoff](https://github.com/chriskohlhoff)
 - **jarro2783** - cxxopt - [jarro2783](https://github.com/jarro2783)
 - **Billie Thompson** - README.md template - [PurpleBooth](https://github.com/PurpleBooth)
