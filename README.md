@@ -56,4 +56,3 @@ min/avg/max/ = 14.372/16.322/18.273 ms
 - **Chris Kohlhoff** - asio - [chriskohlhoff](https://github.com/chriskohlhoff)
 - **jarro2783** - cxxopt - [jarro2783](https://github.com/jarro2783)
 - **Billie Thompson** - README.md template - [PurpleBooth](https://github.com/PurpleBooth)
-- **CloudFlair Recruting Team** - For making me do this for their internship interview, but didn't even bother responding back with an automatic rejection email. Fuck you guys, you guys fucking suck. - [cloudflare-internship-2020](https://github.com/cloudflare-internship-2020)
